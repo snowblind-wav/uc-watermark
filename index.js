@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Partials } = require("discord.js");
+const { Client, GatewayIntentBits, Partials, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const sharp = require("sharp");
 const axios = require("axios");
 const fs = require("fs/promises");
@@ -71,31 +71,52 @@ client.on("messageCreate", async (message) => {
           .toBuffer();
       }
 
-      const watermarkedBuffer = await sharp(imageBuffer)
-        .composite([
-          {
-            input: finalWatermarkBuffer,
-            tile: true,
-          },
-        ])
-        .png()
-        .toBuffer();
+      const fileName = `watermarked-${attachment.name}`
+
+      const deleteButton = new ButtonBuilder()
+        .setCustomId(`delete_${message.author.id}`)
+        .setEmoji('🗑️')
+        .setStyle(ButtonStyle.Danger)
+
+      const row = new ActionRowBuilder().addComponents(deleteButton);
 
       await message.channel.send({
+        content: `-# Posted by: <@${message.author.id}>`,
         files: [
           {
             attachment: watermarkedBuffer,
             name: `watermarked-${attachment.name}`,
           },
         ],
-        content: `-# Posted by: <@${message.author.id}>`,
+        components: [row],
+        
       });
-
       await message.delete();
     } catch (error) {
       console.error("Error processing image:", error);
     }
   }
 });
+
+client.on("interactionCreate"), async (interaction) => {
+  if (!interaction.isButton()) return;
+
+  const [action, targetUserId] = interaction.customId.split("_");
+
+  if (action === "delete") {
+    if (interaction.user.id === targetUserId) {
+      try {
+        await interaction.message.delete();
+      } catch (error) {
+        console.error("Failed to delete message:", error)
+      }
+    } else {
+      await interaction.reply({
+        content: "Only the original poster can delete this",
+        ephemeral: true,
+      })
+    }
+  }
+}
 
 client.login(process.env.DISCORD_TOKEN);
