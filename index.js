@@ -4,7 +4,7 @@ const axios = require("axios");
 const fs = require("fs/promises");
 require("dotenv").config();
 
-const TARGET_CHANNEL_ID = "1396914985237483582";
+const TARGET_CHANNEL_ID = "1396895211749113948";
 const WATERMARK_PATH = "./watermark.png";
 
 const client = new Client({
@@ -70,27 +70,37 @@ client.on("messageCreate", async (message) => {
           })
           .toBuffer();
       }
+      
+      const watermarkedBuffer = await sharp(imageBuffer)
+        .composite([
+          {
+            input: finalWatermarkBuffer,
+            tile: true,
+          },
+        ])
+        .png()
+        .toBuffer();
 
-      const fileName = `watermarked-${attachment.name}`
-
+      const fileName = `watermarked-${attachment.name}`;
+      
       const deleteButton = new ButtonBuilder()
         .setCustomId(`delete_${message.author.id}`)
         .setEmoji('🗑️')
-        .setStyle(ButtonStyle.Danger)
-
+        .setStyle(ButtonStyle.Danger);
+      
       const row = new ActionRowBuilder().addComponents(deleteButton);
 
       await message.channel.send({
-        content: `-# Posted by: <@${message.author.id}>`,
+        content: `Image from <@${message.author.id}>`,
         files: [
           {
             attachment: watermarkedBuffer,
-            name: `watermarked-${attachment.name}`,
+            name: fileName,
           },
         ],
         components: [row],
-        
       });
+
       await message.delete();
     } catch (error) {
       console.error("Error processing image:", error);
@@ -98,7 +108,7 @@ client.on("messageCreate", async (message) => {
   }
 });
 
-client.on("interactionCreate"), async (interaction) => {
+client.on("interactionCreate", async (interaction) => {
   if (!interaction.isButton()) return;
 
   const [action, targetUserId] = interaction.customId.split("_");
@@ -108,15 +118,15 @@ client.on("interactionCreate"), async (interaction) => {
       try {
         await interaction.message.delete();
       } catch (error) {
-        console.error("Failed to delete message:", error)
+        console.error("Failed to delete message on interaction:", error);
       }
     } else {
       await interaction.reply({
-        content: "Only the original poster can delete this",
+        content: "Only the original poster can delete this.",
         ephemeral: true,
-      })
+      });
     }
   }
-}
+});
 
 client.login(process.env.DISCORD_TOKEN);
