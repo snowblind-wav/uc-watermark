@@ -90,7 +90,7 @@ client.on("messageCreate", async (message) => {
       
       const row = new ActionRowBuilder().addComponents(deleteButton);
 
-      let responseContent = `-#Image from <@${message.author.id}>`;
+      let responseContent = `-# Image from <@${message.author.id}>`;
       if (message.content) {
         responseContent = `> ${message.content}\n${responseContent}`;
       }
