@@ -4,7 +4,7 @@ const axios = require("axios");
 const fs = require("fs/promises");
 require("dotenv").config();
 
-const TARGET_CHANNEL_ID = "11396914985237483582";
+const TARGET_CHANNEL_ID = "1396914985237483582";
 const WATERMARK_PATH = "./watermark.png";
 
 const client = new Client({
@@ -96,7 +96,7 @@ client.on("messageCreate", async (message) => {
       }
 
       await message.channel.send({
-        content: `Image from <@${message.author.id}>`,
+        content: responseContent,
         files: [
           {
             attachment: watermarkedBuffer,
