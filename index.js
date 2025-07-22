@@ -4,7 +4,7 @@ const axios = require("axios");
 const fs = require("fs/promises");
 require("dotenv").config();
 
-const TARGET_CHANNEL_ID = "1396895211749113948";
+const TARGET_CHANNEL_ID = "11396914985237483582";
 const WATERMARK_PATH = "./watermark.png";
 
 const client = new Client({
@@ -85,10 +85,15 @@ client.on("messageCreate", async (message) => {
       
       const deleteButton = new ButtonBuilder()
         .setCustomId(`delete_${message.author.id}`)
-        .setEmoji('🗑️')
+        .setLabel('Delete')
         .setStyle(ButtonStyle.Danger);
       
       const row = new ActionRowBuilder().addComponents(deleteButton);
+
+      let responseContent = `Image from <@${message.author.id}>`;
+      if (message.content) {
+        responseContent = `> ${message.content}\n${responseContent}`;
+      }
 
       await message.channel.send({
         content: `Image from <@${message.author.id}>`,
@@ -116,6 +121,7 @@ client.on("interactionCreate", async (interaction) => {
   if (action === "delete") {
     if (interaction.user.id === targetUserId) {
       try {
+        await interaction.deferUpdate();
         await interaction.message.delete();
       } catch (error) {
         console.error("Failed to delete message on interaction:", error);
