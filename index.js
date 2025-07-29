@@ -4,7 +4,7 @@ const axios = require("axios");
 const fs = require("fs/promises");
 require("dotenv").config();
 
-const TARGET_CHANNEL_ID = "1396914985237483582";
+const TARGET_CHANNEL_ID = "1146852711560654930";
 const WATERMARK_PATH = "./watermark.png";
 
 const client = new Client({
