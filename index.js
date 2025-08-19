@@ -33,6 +33,19 @@ client.once("ready", async () => {
   console.log(`Listening for images in channel ID: ${TARGET_CHANNEL_ID}`);
 });
 
+const MAX_SIZE = 8 * 1024 * 1024; // 8MB
+
+async function processImage(inputBuffer) {
+  let outputBuffer = inputBuffer;
+  // Resize if too large
+  while (outputBuffer.length > MAX_SIZE) {
+    outputBuffer = await sharp(outputBuffer)
+      .resize({ width: Math.floor((await sharp(outputBuffer).metadata()).width * 0.8) })
+      .toBuffer();
+  }
+  return outputBuffer;
+}
+
 client.on("messageCreate", async (message) => {
   if (
     !isBotReady ||
@@ -81,6 +94,8 @@ client.on("messageCreate", async (message) => {
         .png()
         .toBuffer();
 
+      const processedBuffer = await processImage(watermarkedBuffer);
+
       const fileName = `watermarked-${attachment.name}`;
       
       const deleteButton = new ButtonBuilder()
@@ -99,7 +114,7 @@ client.on("messageCreate", async (message) => {
         content: responseContent,
         files: [
           {
-            attachment: watermarkedBuffer,
+            attachment: processedBuffer,
             name: fileName,
           },
         ],
